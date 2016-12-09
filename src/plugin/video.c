@@ -31,12 +31,12 @@ char* filename;
 
 void VRVideoPlayerPlay () {
     if (filename == NULL) {
-        Debug("VR Video Player error: no file set");
+        Debug("No filename set, cannot play");
         return;
     }
 
     if (vrVideoPlayerState == VR_VIDEO_PLAYER_PLAYING) {
-        Debug("VR Video Player is already playing");
+        Debug("player is already playing");
         return;
     }
 
@@ -49,7 +49,7 @@ void VRVideoPlayerPause () {
         return;
     }
 
-    Debug("VR Video Player is not in playing state");
+    Debug("player is not in playing state");
 }
 
 void VRVideoPlayerStop () {
@@ -58,10 +58,14 @@ void VRVideoPlayerStop () {
 }
 
 void _VRVideoPlayerVideoSetup () {
-    int returnValue;
-    int videoStreamIndex = av_find_best_stream(ptrFormatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    int returnValue = av_find_best_stream(ptrFormatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
 
-    AVStream *ptrStream = ptrFormatContext->streams[videoStreamIndex];
+    if (returnValue < 0) {
+        Debugf("No suitable video track found");
+        return;
+    }
+
+    AVStream *ptrStream = ptrFormatContext->streams[returnValue];
     AVCodec *ptrCodec = avcodec_find_decoder(ptrStream->codecpar->codec_id);
     if (ptrCodec == NULL) {
         Debug("Decoder not found for video");
