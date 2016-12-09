@@ -57,23 +57,10 @@ void VRVideoPlayerStop () {
     VRVideoPlayerDestroy();
 }
 
-void VRVideoPlayerSetup (char* file) {
+void _VRVideoPlayerVideoSetup () {
     int returnValue;
-
-    filename = file;
-    returnValue = avformat_open_input(&ptrFormatContext, file, NULL, NULL);
-    if (returnValue < 0) {
-        Debugf("Error opening input: %d", returnValue);
-        return;
-    }
-
-    returnValue = avformat_find_stream_info(ptrFormatContext, NULL);
-    if (returnValue < 0) {
-        Debugf("Error finding stream info: %d", returnValue);
-        return;
-    }
-
     int videoStreamIndex = av_find_best_stream(ptrFormatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+
     AVStream *ptrStream = ptrFormatContext->streams[videoStreamIndex];
     AVCodec *ptrCodec = avcodec_find_decoder(ptrStream->codecpar->codec_id);
     if (ptrCodec == NULL) {
@@ -100,7 +87,6 @@ void VRVideoPlayerSetup (char* file) {
     videoHeight = ptrCodecContext->height;
     videoPixelFormat = ptrCodecContext->pix_fmt;
     videoBufferSize = av_image_alloc(ptrVideoData, videoLinesize, videoWidth, videoHeight, AV_PIX_FMT_RGB24, 1);
-    Debugf("Allocated image %dx%d, linesize: %d", videoWidth, videoHeight, videoLinesize[0]);
     if (videoBufferSize < 0) {
         Debugf("Image could not be allocated: %d", videoBufferSize);
         return;
@@ -116,6 +102,25 @@ void VRVideoPlayerSetup (char* file) {
     packet.size = 0;
 
     swsContext = sws_getContext(ptrCodecContext->width, ptrCodecContext->height, AV_PIX_FMT_YUV420P, videoWidth, videoHeight, AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL, NULL);
+}
+
+void VRVideoPlayerSetup (char* file) {
+    int returnValue;
+
+    filename = file;
+    returnValue = avformat_open_input(&ptrFormatContext, file, NULL, NULL);
+    if (returnValue < 0) {
+        Debugf("Error opening input: %d", returnValue);
+        return;
+    }
+
+    returnValue = avformat_find_stream_info(ptrFormatContext, NULL);
+    if (returnValue < 0) {
+        Debugf("Error finding stream info: %d", returnValue);
+        return;
+    }
+
+    _VRVideoPlayerVideoSetup();
 }
 
 void VRVideoPlayerDestroy () {
