@@ -9,12 +9,11 @@ CFLAGS := -lavformat -lavcodec -lswscale
 
 CFILES = $(shell find ./src -type f -name '*.c')
 
-%:
+osx:
+	$(shell mkdir -p ./bin/Assets/Plugins)
+	gcc $(CFLAGS) -arch x86_64 -bundle -Wl,-undefined,dynamic_lookup -lGLEW -o ./bin/Assets/Plugins/main.bundle $(CFILES)
 	$(shell cp ./src/unity/MediaPlayer.cs ./bin/Assets/MediaPlayer.cs)
 
-osx:
-	$(shell cp ./src/unity/MediaPlayer.cs ./bin/Assets/MediaPlayer.cs)
-	gcc $(CFLAGS) -arch x86_64 -bundle -Wl,-undefined,dynamic_lookup -lGLEW -o ./bin/Assets/Plugins/main.bundle $(CFILES)
 
 android:
 	ndk-build --directory=./ NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk
