@@ -24,3 +24,10 @@ void VRVideoPlayerPlay() {
 int VRVideoPlayerGetState() {
     return vr_player_get_state();
 }
+
+int VRVideoPlayerGetAudioChannels() {
+    return vr_player_get_audio_channels();
+}
+int VRVideoPlayerGetAudioSampleRate() {
+    return vr_player_get_audio_sample_rate();
+}

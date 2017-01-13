@@ -8,4 +8,6 @@ void VRVideoPlayerSetup();
 void VRVideoPlayerDestroy();
 int VRVideoPlayerGetState();
 
+int VRVideoPlayerGetAudioChannels();
+int VRVideoPlayerGetAudioSampleRate();
 #endif

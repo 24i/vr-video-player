@@ -13,6 +13,9 @@ void vr_player_play ();
 void vr_player_destroy ();
 int vr_player_get_state();
 
+int vr_player_get_audio_channels();
+int vr_player_get_audio_sample_rate();
+
 // Internal structure interfaces
 typedef struct VRPlayerVideoData {
 

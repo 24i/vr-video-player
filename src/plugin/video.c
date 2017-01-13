@@ -23,7 +23,7 @@ struct SwsContext* swsContext;
 struct SwrContext* swrContext;
 
 static uint8_t *ptrVideoData[4] = { NULL };
-static uint8_t *ptrAudioData = NULL;
+static uint8_t **ptrAudioData = NULL;
 static int videoLinesize[4];
 static int videoWidth;
 static int videoHeight;
@@ -107,10 +107,9 @@ void vr_player_setup_audio_track () {
     av_opt_set_int(swrContext, "out_channel_layout", audioTrack->codecContext->channel_layout,  0);
     av_opt_set_int(swrContext, "in_sample_rate",     audioTrack->codecContext->sample_rate, 0);
     av_opt_set_int(swrContext, "out_sample_rate",    audioTrack->codecContext->sample_rate, 0);
-    av_opt_set_sample_fmt(swrContext, "in_sample_fmt",  AV_SAMPLE_FMT_FLTP, 0);
-    av_opt_set_sample_fmt(swrContext, "out_sample_fmt", AV_SAMPLE_FMT_S16,  0);
+    av_opt_set_sample_fmt(swrContext, "in_sample_fmt",  audioTrack->codecContext->sample_fmt, 0);
+    av_opt_set_sample_fmt(swrContext, "out_sample_fmt", AV_SAMPLE_FMT_FLT, 0);
     swr_init(swrContext);
-
 }
 
 void vr_player_setup (char* file) {
@@ -165,10 +164,19 @@ int vr_decode_packet () {
             sws_scale(swsContext, (uint8_t const * const *)(ptrFrame->data), ptrFrame->linesize, 0, ptrCodecContext->height, ptrVideoData, videoLinesize);
         } else {
 
-            //swr_convert(swrContext, &outputBuffer, ptrFrame->nb_samples, (uint8_t const **)ptrFrame->extended_data, ptrFrame->nb_samples);
-            //AudioData(outputBuffer, 0);
+            // Allocate audio sample data
+            av_samples_alloc_array_and_samples(&ptrAudioData, NULL, ptrFrame->channels, ptrFrame->nb_samples, AV_SAMPLE_FMT_FLT, 0);
 
-            Debugf("Audio %d", ptrCodecContextType->channels);
+            // Convert to understandable format
+            ret = swr_convert(swrContext, ptrAudioData, ptrFrame->nb_samples, (uint8_t const **)ptrFrame->extended_data, ptrFrame->nb_samples);
+
+            if (ret < 0) {
+                Debug("Error while converting audio");
+                return ret;
+            }
+
+            int dst_bufsize = av_samples_get_buffer_size(NULL, ptrFrame->channels, ret, AV_SAMPLE_FMT_FLT, 1);
+            AudioData(ptrAudioData[0], dst_bufsize);
         }
     } else {
         Debugf("Error receiving frame: %s", av_err2str(ret));
@@ -232,4 +240,12 @@ void vr_player_render_texture (void* ptrVideoTexId) {
 
 int vr_player_get_state () {
     return vrVideoPlayerState;
+}
+
+int vr_player_get_audio_channels() {
+    return audioTrack->codecContext->channels;
+}
+
+int vr_player_get_audio_sample_rate() {
+    return audioTrack->codecContext->sample_rate;
 }

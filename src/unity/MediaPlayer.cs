@@ -3,6 +3,7 @@ using System.Collections;
 using System.Runtime.InteropServices;
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 public enum MediaPlayerState {
 	STOPPED,
@@ -44,8 +45,17 @@ public class MediaPlayer : MonoBehaviour {
 	[DllImport("main")]
 	private static extern int VRVideoPlayerGetState();
 
+	[DllImport("main")]
+	private static extern int VRVideoPlayerGetAudioChannels();
+
+	[DllImport("main")]
+	private static extern int VRVideoPlayerGetAudioSampleRate();
+
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	public delegate void DebugDelegate (string str);
+
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void AudioDelegate (IntPtr audioPointer, int bufSize);
 	#endregion
 
 	#region Media player properties
@@ -54,6 +64,11 @@ public class MediaPlayer : MonoBehaviour {
 	public int height;
 
 	private Texture2D videoTexture;
+	private AudioSource audioSource;
+	private AudioClip audioClip;
+
+	private float[] audioData;
+	private List<float[]> audioDataQueue = new List<float[]> ();
 	#endregion
 
 	#region Behaviour callbacks
@@ -64,6 +79,11 @@ public class MediaPlayer : MonoBehaviour {
 		IntPtr ptrIntDelegate = Marshal.GetFunctionPointerForDelegate (debugDelegate);
 		SetDebugCallback (ptrIntDelegate);
 
+		// Setup debug
+		AudioDelegate audioDelegate = new AudioDelegate(AudioCallback);
+		IntPtr ptrIntAudioDelegate = Marshal.GetFunctionPointerForDelegate (audioDelegate);
+		SetAudioCallback (ptrIntAudioDelegate);
+
 		VRVideoPlayerSetup (mediaFile);
 
 		// Setup video texture
@@ -71,10 +91,20 @@ public class MediaPlayer : MonoBehaviour {
 		videoTexture.Apply();
 		GetComponent<Renderer> ().material.mainTexture = videoTexture;
 
+		audioSource = gameObject.AddComponent<AudioSource> ();
+
+		audioClip = AudioClip.Create(
+			"audioClip", 
+			(int)((float)VRVideoPlayerGetAudioSampleRate() * 600.0f),
+			VRVideoPlayerGetAudioChannels(),
+			VRVideoPlayerGetAudioSampleRate(),
+			false
+		);
+
+		audioSource.clip = audioClip;
+
 		// Attach unity texture to plugin
 		SetUnityTexture (videoTexture.GetNativeTexturePtr ());
-		Debug.Log (GetState ());
-
 		yield return StartCoroutine("CallPluginAtEndOfFrames");
 	}
 
@@ -84,6 +114,49 @@ public class MediaPlayer : MonoBehaviour {
 
 	static void DebugCallback (string str) {
 		Debug.Log ("Plugin: " + str);
+	}
+
+	void AudioCallback (IntPtr audioPointer, int bufSize) {
+		float[] buffer = new float[bufSize];
+		Marshal.Copy (audioPointer, buffer, 0, bufSize);
+
+		float[] data = new float[buffer.Length / 4];
+		Buffer.BlockCopy (buffer, 0, data, 0, buffer.Length);
+
+		float[] audioData = new float[data.Length];
+
+		for (int i = 0; i < data.Length; i++) {
+			if (data[i] > 1.0f) {
+				audioData[i] = 1.0f;
+			} else if (data[i] < -1.0f) {
+				audioData [i] = -1.0f;
+			} else {
+				audioData [i] = (float)data [i];
+			}
+		}
+
+		audioDataQueue.Add (audioData);
+
+		//audioSource.Play ();
+	}
+
+	private int offset = 0;
+	void Update () {
+		if (audioDataQueue.Count > 0) {
+			try {
+				audioClip.SetData (audioDataQueue [0], offset);
+				audioDataQueue.RemoveAt (0);
+				offset++;
+
+				audioSource.Play();
+
+			} catch (Exception e) {
+				Debug.Log (e.Message);
+				Debug.Log (e.Source);
+				Debug.Log (e.StackTrace);
+			}
+
+		}
 	}
 
 	private IEnumerator CallPluginAtEndOfFrames()
