@@ -114,6 +114,21 @@ public class MediaPlayer : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// Either plays or pauses the media player based on the
+	/// current state.
+	/// </summary>
+	/// <returns>The state after trying to either resume or pause</returns>
+	public void PlayPause() {
+		MediaPlayerState state = GetState ();
+
+		if (state == MediaPlayerState.PLAYING) {
+			Pause ();
+		} else if (state == MediaPlayerState.PAUSED || state == MediaPlayerState.STOPPED){
+			Play ();
+		}
+	}
+
+	/// <summary>
 	/// Get the media player state
 	/// </summary>
 	/// <returns>The media player state.</returns>
