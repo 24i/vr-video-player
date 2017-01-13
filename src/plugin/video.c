@@ -1,18 +1,29 @@
 #include <libavutil/imgutils.h>
+#include <libavutil/opt.h>
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
+#include <libswresample/swresample.h>
+#include <OpenGL/glu.h>
+#include <stdbool.h>
 
 #include "video.h"
+#include "debug.h"
+#include "player/track.h"
 
 AVFormatContext *ptrFormatContext = NULL;
 AVCodecContext *ptrCodecContext = NULL;
 AVFrame *ptrFrame = NULL;
 AVPacket packet;
 
+VRPlayerTrack *audioTrack = NULL;
+VRPlayerTrack *videoTrack = NULL;
+
 struct SwsContext* swsContext;
+struct SwrContext* swrContext;
 
 static uint8_t *ptrVideoData[4] = { NULL };
+static uint8_t *ptrAudioData = NULL;
 static int videoLinesize[4];
 static int videoWidth;
 static int videoHeight;
@@ -23,13 +34,14 @@ static enum AVPixelFormat videoPixelFormat;
 enum PLAYER_STATES {
     VR_VIDEO_PLAYER_STOPPED = 1,
     VR_VIDEO_PLAYER_PAUSED = 2,
-    VR_VIDEO_PLAYER_PLAYING = 3
+    VR_VIDEO_PLAYER_PLAYING = 3,
+    VR_VIDEO_PLAYER_BUFFERING = 4
 };
 enum PLAYER_STATES vrVideoPlayerState = VR_VIDEO_PLAYER_STOPPED;
 
 char* filename;
 
-void VRVideoPlayerPlay () {
+void vr_player_play () {
     if (filename == NULL) {
         Debug("No filename set, cannot play");
         return;
@@ -43,7 +55,7 @@ void VRVideoPlayerPlay () {
     vrVideoPlayerState = VR_VIDEO_PLAYER_PLAYING;
 }
 
-void VRVideoPlayerPause () {
+void vr_player_pause () {
     if (vrVideoPlayerState == VR_VIDEO_PLAYER_PLAYING) {
         vrVideoPlayerState = VR_VIDEO_PLAYER_PAUSED;
         return;
@@ -52,41 +64,20 @@ void VRVideoPlayerPause () {
     Debug("player is not in playing state");
 }
 
-void VRVideoPlayerStop () {
+void vr_player_stop () {
     vrVideoPlayerState = VR_VIDEO_PLAYER_STOPPED;
-    VRVideoPlayerDestroy();
+    vr_player_destroy();
 }
 
-void _VRVideoPlayerVideoSetup () {
-    int returnValue = av_find_best_stream(ptrFormatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
-
-    if (returnValue < 0) {
-        Debugf("No suitable video track found");
+void vr_player_setup_video_track () {
+    vr_player_setup_track(&videoTrack, ptrFormatContext, AVMEDIA_TYPE_VIDEO);
+    if (videoTrack == NULL) {
+        Debug("Could not initialize video track");
         return;
     }
+    ptrCodecContext = videoTrack->codecContext;
 
-    AVStream *ptrStream = ptrFormatContext->streams[returnValue];
-    AVCodec *ptrCodec = avcodec_find_decoder(ptrStream->codecpar->codec_id);
-    if (ptrCodec == NULL) {
-        Debug("Decoder not found for video");
-        return;
-    }
-
-    ptrCodecContext = avcodec_alloc_context3(ptrCodec);
-    if (ptrCodecContext == NULL) {
-        Debug("Decoder context could not be allocated");
-        return;
-    }
-    avcodec_parameters_to_context(ptrCodecContext, ptrStream->codecpar);
-
-    AVDictionary *opts = NULL;
-    av_dict_set(&opts, "refcounted_frames", "0", 0);
-    returnValue = avcodec_open2(ptrCodecContext, ptrCodec, &opts);
-    if (returnValue < 0) {
-        Debugf("Codec context could not be initialized: %d", returnValue);
-        return;
-    }
-
+    // TODO: refactor this into a separate struct
     videoWidth = ptrCodecContext->width;
     videoHeight = ptrCodecContext->height;
     videoPixelFormat = ptrCodecContext->pix_fmt;
@@ -108,7 +99,21 @@ void _VRVideoPlayerVideoSetup () {
     swsContext = sws_getContext(ptrCodecContext->width, ptrCodecContext->height, AV_PIX_FMT_YUV420P, videoWidth, videoHeight, AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL, NULL);
 }
 
-void VRVideoPlayerSetup (char* file) {
+void vr_player_setup_audio_track () {
+    vr_player_setup_track(&audioTrack, ptrFormatContext, AVMEDIA_TYPE_AUDIO);
+
+    swrContext = swr_alloc();
+    av_opt_set_int(swrContext, "in_channel_layout",  audioTrack->codecContext->channel_layout, 0);
+    av_opt_set_int(swrContext, "out_channel_layout", audioTrack->codecContext->channel_layout,  0);
+    av_opt_set_int(swrContext, "in_sample_rate",     audioTrack->codecContext->sample_rate, 0);
+    av_opt_set_int(swrContext, "out_sample_rate",    audioTrack->codecContext->sample_rate, 0);
+    av_opt_set_sample_fmt(swrContext, "in_sample_fmt",  AV_SAMPLE_FMT_FLTP, 0);
+    av_opt_set_sample_fmt(swrContext, "out_sample_fmt", AV_SAMPLE_FMT_S16,  0);
+    swr_init(swrContext);
+
+}
+
+void vr_player_setup (char* file) {
     int returnValue;
 
     filename = file;
@@ -124,23 +129,25 @@ void VRVideoPlayerSetup (char* file) {
         return;
     }
 
-    _VRVideoPlayerVideoSetup();
+    vr_player_setup_video_track();
+    vr_player_setup_audio_track();
 }
 
-void VRVideoPlayerDestroy () {
+void vr_player_destroy () {
     av_frame_free(&ptrFrame);
-    avcodec_close(ptrCodecContext);
+    avcodec_close(videoTrack->codecContext);
     avformat_close_input(&ptrFormatContext);
 }
 
-int DecodePacket (int *receivedFrame, int cached) {
+int vr_decode_packet () {
     int decoded = packet.size, ret;
 
-    // Did not receive frame by default
-    receivedFrame = 0;
+    // TODO: find a better way to get codec context from tracks
+    bool isVideoTrack = packet.stream_index == videoTrack->trackIndex;
+    AVCodecContext *ptrCodecContextType = isVideoTrack ? videoTrack->codecContext : audioTrack->codecContext;
 
     // Try to decode the frame into a packet
-    ret = avcodec_send_packet(ptrCodecContext, &packet);
+    ret = avcodec_send_packet(ptrCodecContextType, &packet);
     if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF) {
         Debugf("Error creating packet: %s", av_err2str(ret));
         return -1;
@@ -150,9 +157,19 @@ int DecodePacket (int *receivedFrame, int cached) {
         packet.size = 0;
     }
 
-    ret = avcodec_receive_frame(ptrCodecContext, ptrFrame);
+    ret = avcodec_receive_frame(ptrCodecContextType, ptrFrame);
     if (ret >= 0) {
-        sws_scale(swsContext, (uint8_t const * const *)(ptrFrame->data), ptrFrame->linesize, 0, ptrCodecContext->height, ptrVideoData, videoLinesize);
+        // Do stuff with frame
+
+        if (isVideoTrack) {
+            sws_scale(swsContext, (uint8_t const * const *)(ptrFrame->data), ptrFrame->linesize, 0, ptrCodecContext->height, ptrVideoData, videoLinesize);
+        } else {
+
+            //swr_convert(swrContext, &outputBuffer, ptrFrame->nb_samples, (uint8_t const **)ptrFrame->extended_data, ptrFrame->nb_samples);
+            //AudioData(outputBuffer, 0);
+
+            Debugf("Audio %d", ptrCodecContextType->channels);
+        }
     } else {
         Debugf("Error receiving frame: %s", av_err2str(ret));
         return ret;
@@ -164,7 +181,7 @@ int DecodePacket (int *receivedFrame, int cached) {
     return decoded;
 }
 
-int GenerateVideoTexture () {
+int vr_player_generate_texture () {
 
     // Do not generate anything when not in the playing state
     if (vrVideoPlayerState != VR_VIDEO_PLAYER_PLAYING) {
@@ -172,11 +189,16 @@ int GenerateVideoTexture () {
     }
 
     if (av_read_frame(ptrFormatContext, &packet) >= 0) {
-        AVPacket originalPacket = packet;
 
-        int receivedFrame;
-        int ret = DecodePacket(&receivedFrame, 0);
+        /*
+         * Ignore non selected tracks
+         * TODO: find a better way to differentiate between active tracks
+         */
+        if (packet.stream_index != videoTrack->trackIndex && packet.stream_index != audioTrack->trackIndex) {
+            return -1;
+        }
 
+        int ret = vr_decode_packet();
         if (ret < 0) {
             Debugf("Error decoding packet: %s", av_err2str(ret));
             return -1;
@@ -189,4 +211,21 @@ int GenerateVideoTexture () {
     }
 
     return 0;
+}
+
+void vr_player_render_texture (void* ptrVideoTexId) {
+
+    // Don't render anything without a texture to render on
+    if (ptrVideoTexId == NULL) {
+        return;
+    }
+
+    if (ptrVideoData[0] == NULL) {
+        return;
+    }
+
+    GLuint gltex = (GLuint)(size_t)(ptrVideoTexId);
+    glBindTexture(GL_TEXTURE_2D, gltex);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, videoWidth, videoHeight, GL_RGB, GL_UNSIGNED_BYTE, ptrVideoData[0]);
+
 }

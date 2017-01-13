@@ -1,8 +1,14 @@
-typedef void (*FuncPtr)( char * );
-FuncPtr Debug;
+#include <stdio.h>
+#include <stdarg.h>
+
+#include "debug.h"
 
 void SetDebugCallback (FuncPtr ptrFunc) {
     Debug = ptrFunc;
+}
+
+void SetAudioCallback (FuncPtrAudio ptrFunc) {
+    AudioData = ptrFunc;
 }
 
 void Debugf(const char * format, ...) {
