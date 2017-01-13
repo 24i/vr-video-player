@@ -229,3 +229,7 @@ void vr_player_render_texture (void* ptrVideoTexId) {
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, videoWidth, videoHeight, GL_RGB, GL_UNSIGNED_BYTE, ptrVideoData[0]);
 
 }
+
+int vr_player_get_state () {
+    return vrVideoPlayerState;
+}

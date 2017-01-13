@@ -4,6 +4,13 @@ using System.Runtime.InteropServices;
 using System;
 using System.IO;
 
+public enum MediaPlayerState {
+    STOPPED,
+    PAUSED,
+    PLAYING,
+    BUFFERING
+}
+
 public class MediaPlayer : MonoBehaviour {
 
 	#region Plugin imports
@@ -100,6 +107,14 @@ public class MediaPlayer : MonoBehaviour {
 	/// </summary>
     public void Pause () {
         VRVideoPlayerPause ();
+    }
+
+	/// <summary>
+	/// Get the media player state
+	/// </summary>
+	/// <returns>The media player state.</returns>
+    public int GetState () {
+        return (MediaPlayerState)VRVideoPlayerGetState();
     }
 
 	public void SetPosition () {

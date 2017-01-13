@@ -20,3 +20,7 @@ void VRVideoPlayerPause() {
 void VRVideoPlayerPlay() {
     vr_player_play();
 }
+
+int VRVideoPlayerGetState() {
+    return vr_player_get_state();
+}

@@ -6,5 +6,6 @@ void VRVideoPlayerPlay();
 void VRVideoPlayerPause();
 void VRVideoPlayerSetup();
 void VRVideoPlayerDestroy();
+int VRVideoPlayerGetState();
 
 #endif

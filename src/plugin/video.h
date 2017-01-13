@@ -11,6 +11,7 @@ void vr_player_stop ();
 void vr_player_pause ();
 void vr_player_play ();
 void vr_player_destroy ();
+int vr_player_get_state();
 
 // Internal structure interfaces
 typedef struct VRPlayerVideoData {
