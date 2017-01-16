@@ -94,7 +94,7 @@ public class MediaPlayer : MonoBehaviour {
 		audioSource = gameObject.AddComponent<AudioSource> ();
 
 		audioClip = AudioClip.Create(
-			"audioClip", 
+			"audioClip",
 			(int)((float)VRVideoPlayerGetAudioSampleRate() * 600.0f),
 			VRVideoPlayerGetAudioChannels(),
 			VRVideoPlayerGetAudioSampleRate(),
@@ -140,16 +140,12 @@ public class MediaPlayer : MonoBehaviour {
 		//audioSource.Play ();
 	}
 
-	private int offset = 0;
 	void Update () {
 		if (audioDataQueue.Count > 0) {
 			try {
-				audioClip.SetData (audioDataQueue [0], offset);
+				audioClip.SetData (audioDataQueue [0], 0);
 				audioDataQueue.RemoveAt (0);
-				offset++;
-
 				audioSource.Play();
-
 			} catch (Exception e) {
 				Debug.Log (e.Message);
 				Debug.Log (e.Source);
@@ -208,7 +204,7 @@ public class MediaPlayer : MonoBehaviour {
 	public MediaPlayerState GetState () {
 
 		/*
-		 * Plugin enums are based on natural indexes, convert to 
+		 * Plugin enums are based on natural indexes, convert to
 		 * 0 based index to use with behavior enum
 		 */
 		return (MediaPlayerState)(VRVideoPlayerGetState() - 1);
