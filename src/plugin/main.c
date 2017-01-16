@@ -5,7 +5,7 @@
 
 #include "unity/IUnityGraphics.h"
 #include "debug.h"
-#include "video.h"
+#include "player.h"
 
 void* ptrVideoTexId = NULL;
 int firstVideoRender = 0;

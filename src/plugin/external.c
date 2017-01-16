@@ -1,5 +1,5 @@
 #include "external.h"
-#include "video.h"
+#include "player.h"
 
 void VRVideoPlayerSetup(char* file) {
     vr_player_setup(file);

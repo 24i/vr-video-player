@@ -7,7 +7,7 @@
 #include <OpenGL/glu.h>
 #include <stdbool.h>
 
-#include "video.h"
+#include "player.h"
 #include "debug.h"
 #include "player/track.h"
 
