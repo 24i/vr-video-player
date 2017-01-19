@@ -2,26 +2,18 @@
 #define VIDEO_HEADER_FILE
 
 // Internal method interfaces
-int vr_player_generate_texture();
-void vr_player_render_texture(void* ptrVideoTexId);
-void vr_player_setup(char* file);
-void vr_player_setup_video_track();
-int vr_decode_packet ();
-void vr_player_stop ();
-void vr_player_pause ();
-void vr_player_play ();
-void vr_player_destroy ();
-int vr_player_get_state();
+int mediaplayer_generate_texture();
+void mediaplayer_render_texture(void* ptrVideoTexId);
+void mediaplayer_setup(char* file);
+void mediaplayer_setup_video_track();
+int mediaplayer_decode_packet ();
+void mediaplayer_stop ();
+void mediaplayer_pause ();
+void mediaplayer_play ();
+void mediaplayer_destroy ();
+int mediaplayer_get_state();
 
-int vr_player_get_audio_channels();
-int vr_player_get_audio_sample_rate();
-
-// Internal structure interfaces
-typedef struct VRPlayerVideoData {
-
-    int videoWidth;
-    int videoHeight;
-
-} VRPlayerVideoData;
+int mediaplayer_get_audio_channels();
+int mediaplayer_get_audio_sample_rate();
 
 #endif

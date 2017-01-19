@@ -19,8 +19,8 @@ void SetUnityTexture (void* unityTexId) {
 }
 
 static void UNITY_INTERFACE_API OnRenderEvent(int eventId) {
-    if (vr_player_generate_texture() >= 0) {
-        vr_player_render_texture(ptrVideoTexId);
+    if (mediaplayer_generate_texture() >= 0) {
+        mediaplayer_render_texture(ptrVideoTexId);
     }
 }
 

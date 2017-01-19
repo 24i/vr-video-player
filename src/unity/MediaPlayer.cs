@@ -28,28 +28,28 @@ public class MediaPlayer : MonoBehaviour {
 	private static extern void SetUnityTexture (IntPtr tex);
 
 	[DllImport("main")]
-	private static extern void VRVideoPlayerSetup (string file);
+	private static extern void MediaPlayerSetup (string file);
 
 	[DllImport("main")]
-	private static extern void VRVideoPlayerDestroy ();
+	private static extern void MediaPlayerDestroy ();
 
 	[DllImport("main")]
-	private static extern void VRVideoPlayerPlay();
+	private static extern void MediaPlayerPlay();
 
 	[DllImport("main")]
-	private static extern void VRVideoPlayerPause();
+	private static extern void MediaPlayerPause();
 
 	[DllImport("main")]
-	private static extern void VRVideoPlayerStop();
+	private static extern void MediaPlayerStop();
 
 	[DllImport("main")]
-	private static extern int VRVideoPlayerGetState();
+	private static extern int MediaPlayerGetState();
 
 	[DllImport("main")]
-	private static extern int VRVideoPlayerGetAudioChannels();
+	private static extern int MediaPlayerGetAudioChannels();
 
 	[DllImport("main")]
-	private static extern int VRVideoPlayerGetAudioSampleRate();
+	private static extern int MediaPlayerGetAudioSampleRate();
 
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	public delegate void DebugDelegate (string str);
@@ -84,7 +84,7 @@ public class MediaPlayer : MonoBehaviour {
 		IntPtr ptrIntAudioDelegate = Marshal.GetFunctionPointerForDelegate (audioDelegate);
 		SetAudioCallback (ptrIntAudioDelegate);
 
-		VRVideoPlayerSetup (mediaFile);
+		MediaPlayerSetup (mediaFile);
 
 		// Setup video texture
 		videoTexture = new Texture2D (width, height, TextureFormat.RGB24, false);
@@ -95,9 +95,9 @@ public class MediaPlayer : MonoBehaviour {
 
 		audioClip = AudioClip.Create(
 			"audioClip",
-			(int)((float)VRVideoPlayerGetAudioSampleRate() * 600.0f),
-			VRVideoPlayerGetAudioChannels(),
-			VRVideoPlayerGetAudioSampleRate(),
+			(int)((float)MediaPlayerGetAudioSampleRate() * 600.0f),
+			MediaPlayerGetAudioChannels(),
+			MediaPlayerGetAudioSampleRate(),
 			false
 		);
 
@@ -109,7 +109,7 @@ public class MediaPlayer : MonoBehaviour {
 	}
 
 	void OnDestroy () {
-		VRVideoPlayerStop ();
+		MediaPlayerStop ();
 	}
 
 	static void DebugCallback (string str) {
@@ -158,10 +158,11 @@ public class MediaPlayer : MonoBehaviour {
 	private IEnumerator CallPluginAtEndOfFrames()
 	{
 		while (true) {
-			// Wait until all frame rendering is done
-			yield return new WaitForEndOfFrame();
-
 			GL.IssuePluginEvent(GetRenderEventFunc(), 1);
+
+			// Wait until all frame rendering is done
+			yield return new WaitForSeconds(1.0f / 29.95f);
+
 		}
 	}
 	#endregion
@@ -172,14 +173,14 @@ public class MediaPlayer : MonoBehaviour {
 	/// Starts media player playback
 	/// </summary>
 	public void Play () {
-		VRVideoPlayerPlay ();
+		MediaPlayerPlay ();
 	}
 
 	/// <summary>
 	/// Pauses the media player
 	/// </summary>
 	public void Pause () {
-		VRVideoPlayerPause ();
+		MediaPlayerPause ();
 	}
 
 	/// <summary>
@@ -207,7 +208,7 @@ public class MediaPlayer : MonoBehaviour {
 		 * Plugin enums are based on natural indexes, convert to
 		 * 0 based index to use with behavior enum
 		 */
-		return (MediaPlayerState)(VRVideoPlayerGetState() - 1);
+		return (MediaPlayerState)(MediaPlayerGetState() - 1);
 	}
 
 	public void SetPosition () {

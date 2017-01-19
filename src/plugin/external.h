@@ -2,12 +2,12 @@
 #define EXTERNAL_HEADER_FILE
 
 // Public video method interfaces
-void VRVideoPlayerPlay();
-void VRVideoPlayerPause();
-void VRVideoPlayerSetup();
-void VRVideoPlayerDestroy();
-int VRVideoPlayerGetState();
+void MediaPlayerPlay();
+void MediaPlayerPause();
+void MediaPlayerSetup();
+void MediaPlayerDestroy();
+int MediaPlayerGetState();
 
-int VRVideoPlayerGetAudioChannels();
-int VRVideoPlayerGetAudioSampleRate();
+int MediaPlayerGetAudioChannels();
+int MediaPlayerGetAudioSampleRate();
 #endif

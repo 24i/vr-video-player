@@ -1,8 +1,8 @@
 #include "track.h"
 #include "../debug.h"
 
-void vr_player_setup_track (VRPlayerTrack **track, AVFormatContext *ptrFormatContext, enum AVMediaType type) {
-    VRPlayerTrack *tmpTrack = (VRPlayerTrack *)malloc(sizeof(VRPlayerTrack));
+void mediaplayer_setup_track (MediaPlayerTrack **track, AVFormatContext *ptrFormatContext, enum AVMediaType type) {
+    MediaPlayerTrack *tmpTrack = (MediaPlayerTrack *)malloc(sizeof(MediaPlayerTrack));
     int stream = av_find_best_stream(ptrFormatContext, type, -1, -1, NULL, 0);
 
     if (stream < 0) {

@@ -1,33 +1,33 @@
 #include "external.h"
 #include "player.h"
 
-void VRVideoPlayerSetup(char* file) {
-    vr_player_setup(file);
+void MediaPlayerSetup(char* file) {
+    mediaplayer_setup(file);
 }
 
-void VRVideoPlayerDestroy() {
-    vr_player_destroy();
+void MediaPlayerDestroy() {
+    mediaplayer_destroy();
 }
 
-void VRVideoPlayerStop() {
-    vr_player_stop();
+void MediaPlayerStop() {
+    mediaplayer_stop();
 }
 
-void VRVideoPlayerPause() {
-    vr_player_pause();
+void MediaPlayerPause() {
+    mediaplayer_pause();
 }
 
-void VRVideoPlayerPlay() {
-    vr_player_play();
+void MediaPlayerPlay() {
+    mediaplayer_play();
 }
 
-int VRVideoPlayerGetState() {
-    return vr_player_get_state();
+int MediaPlayerGetState() {
+    return mediaplayer_get_state();
 }
 
-int VRVideoPlayerGetAudioChannels() {
-    return vr_player_get_audio_channels();
+int MediaPlayerGetAudioChannels() {
+    return mediaplayer_get_audio_channels();
 }
-int VRVideoPlayerGetAudioSampleRate() {
-    return vr_player_get_audio_sample_rate();
+int MediaPlayerGetAudioSampleRate() {
+    return mediaplayer_get_audio_sample_rate();
 }

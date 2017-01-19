@@ -1,10 +1,10 @@
-#ifndef VRTRACK_HEADER_FILE
-#define VRTRACK_HEADER_FILE
+#ifndef MEDIAPLAYER_TRACK_HEADER_FILE
+#define MEDIAPLAYER_TRACK_HEADER_FILE
 
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 
-typedef struct VRPlayerTrack {
+typedef struct MediaPlayerTrack {
 
     int trackIndex;
 
@@ -12,8 +12,8 @@ typedef struct VRPlayerTrack {
     AVCodec *codec;
     AVCodecContext *codecContext;
 
-} VRPlayerTrack;
+} MediaPlayerTrack;
 
-void vr_player_setup_track (VRPlayerTrack **track, AVFormatContext *ptrFormatContext, enum AVMediaType type);
+void mediaplayer_setup_track (MediaPlayerTrack **track, AVFormatContext *ptrFormatContext, enum AVMediaType type);
 
 #endif
