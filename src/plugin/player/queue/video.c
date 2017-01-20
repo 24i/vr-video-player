@@ -39,6 +39,10 @@ MediaPlayerVideoQueueNode* mediaplayer_video_queue_pop () {
     return temp;
 }
 
+MediaPlayerVideoQueueNode* mediaplayer_video_queue_first () {
+    return firstVideoNode;
+}
+
 int mediaplayer_video_queue_get_size () {
     return videoQueueSize;
 }

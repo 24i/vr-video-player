@@ -46,6 +46,12 @@ public class MediaPlayer : MonoBehaviour {
 	private static extern int MediaPlayerGetState();
 
 	[DllImport("main")]
+	private static extern float MediaPlayerGetDuration();
+
+	[DllImport("main")]
+	private static extern float MediaPlayerGetPosition();
+
+	[DllImport("main")]
 	private static extern int MediaPlayerGetAudioChannels();
 
 	[DllImport("main")]
@@ -149,17 +155,7 @@ public class MediaPlayer : MonoBehaviour {
 	}
 
 	void Update () {
-		if (audioDataQueue.Count > 0) {
-			try {
-				audioClip.SetData (audioDataQueue [0], 0);
-				audioDataQueue.RemoveAt (0);
-				audioSource.Play();
-			} catch (Exception e) {
-				Debug.Log (e.Message);
-				Debug.Log (e.Source);
-				Debug.Log (e.StackTrace);
-			}
-		}
+
 	}
 
 	private IEnumerator CallPluginAtEndOfFrames()

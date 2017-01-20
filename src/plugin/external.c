@@ -25,6 +25,14 @@ int MediaPlayerGetState() {
     return mediaplayer_get_state();
 }
 
+float MediaPlayerGetDuration () {
+    return mediaplayer_get_duration();
+}
+
+float MediaPlayerGetPosition () {
+    return mediaplayer_get_position();
+}
+
 int MediaPlayerGetAudioChannels() {
     return mediaplayer_get_audio_channels();
 }

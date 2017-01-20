@@ -8,6 +8,9 @@ void MediaPlayerSetup();
 void MediaPlayerDestroy();
 int MediaPlayerGetState();
 
+float MediaPlayerGetDuration();
+float MediaPlayerGetPosition();
+
 int MediaPlayerGetAudioChannels();
 int MediaPlayerGetAudioSampleRate();
 #endif

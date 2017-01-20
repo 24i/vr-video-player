@@ -75,6 +75,23 @@ int mediaplayer_get_state () {
     return mediaPlayerState;
 }
 
+float mediaplayer_get_duration () {
+    return (float)ptrFormatContext->duration / AV_TIME_BASE;
+}
+
+float mediaplayer_get_position () {
+
+    /**
+     * This does not feel like a very safe way to get the current
+     * position.
+     * TODO: see if this can be reworked
+     */
+    MediaPlayerVideoQueueNode* node = mediaplayer_video_queue_first();
+    MediaPlayerTrack* videoTrack = mediaplayer_get_video_track();
+
+    return (float)node->index / av_q2d(videoTrack->stream->avg_frame_rate);
+}
+
 int mediaplayer_get_audio_channels() {
     // TODO: implement
     return 2;

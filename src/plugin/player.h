@@ -20,6 +20,8 @@ void mediaplayer_pause ();
 void mediaplayer_play ();
 void mediaplayer_destroy ();
 int mediaplayer_get_state();
+float mediaplayer_get_duration();
+float mediaplayer_get_position();
 
 int mediaplayer_get_audio_channels();
 int mediaplayer_get_audio_sample_rate();

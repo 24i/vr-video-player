@@ -123,3 +123,7 @@ int mediaplayer_grabber_packet (bool isVideoPacket) {
 
     return decoded;
 }
+
+MediaPlayerTrack* mediaplayer_get_video_track () {
+    return ptrVideoTrack;
+}
