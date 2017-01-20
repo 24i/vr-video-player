@@ -16,4 +16,5 @@ osx:
 
 
 android:
+	$(shell mkdir -p ./bin/Assets/Plugins/Android)
 	ndk-build --directory=./ NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk

@@ -51,3 +51,5 @@ src/android/gen-external-apklibs
 # Project specific
 #
 bin
+libs
+obj

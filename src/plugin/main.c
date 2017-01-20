@@ -2,7 +2,12 @@
 #include <stdarg.h>
 #include <inttypes.h>
 #include <libavformat/avformat.h>
+
+#ifdef UNITY_ANDROID
+#include <GLES2/gl2.h>
+#else
 #include <OpenGL/glu.h>
+#endif
 
 #include "unity/IUnityGraphics.h"
 #include "debug.h"

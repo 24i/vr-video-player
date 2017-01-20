@@ -4,7 +4,6 @@
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 #include <libswresample/swresample.h>
-#include <OpenGL/glu.h>
 #include <stdbool.h>
 
 #include "player.h"

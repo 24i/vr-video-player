@@ -1,0 +1,14 @@
+prefix=/Users/bastuijnman/Code/ffmpeg/build/ffmpeg/armeabi-v7a
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: libavcodec
+Description: FFmpeg codec library
+Version: 57.74.100
+Requires: 
+Requires.private: libavutil >= 55.43.100
+Conflicts:
+Libs: -L${libdir}  -lavcodec 
+Libs.private: -lm -lz -pthread
+Cflags: -I${includedir}
