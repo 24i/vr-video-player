@@ -1,6 +1,14 @@
 #ifndef VIDEO_HEADER_FILE
 #define VIDEO_HEADER_FILE
 
+// Player states
+enum PLAYER_STATES {
+    MEDIA_PLAYER_STOPPED = 1,
+    MEDIA_PLAYER_PAUSED = 2,
+    MEDIA_PLAYER_PLAYING = 3,
+    MEDIA_PLAYER_BUFFERING = 4
+};
+
 // Internal method interfaces
 int mediaplayer_generate_texture();
 void mediaplayer_render_texture(void* ptrVideoTexId);

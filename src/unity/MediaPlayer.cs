@@ -51,6 +51,9 @@ public class MediaPlayer : MonoBehaviour {
 	[DllImport("main")]
 	private static extern int MediaPlayerGetAudioSampleRate();
 
+	[DllImport("main")]
+	private static extern void OnReadAudio(float[] data);
+
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	public delegate void DebugDelegate (string str);
 
@@ -98,14 +101,19 @@ public class MediaPlayer : MonoBehaviour {
 			(int)((float)MediaPlayerGetAudioSampleRate() * 600.0f),
 			MediaPlayerGetAudioChannels(),
 			MediaPlayerGetAudioSampleRate(),
-			false
+			true,
+			OnReadAudioUnity
 		);
-
 		audioSource.clip = audioClip;
 
 		// Attach unity texture to plugin
 		SetUnityTexture (videoTexture.GetNativeTexturePtr ());
+
 		yield return StartCoroutine("CallPluginAtEndOfFrames");
+	}
+
+	void OnReadAudioUnity (float[] data) {
+		OnReadAudio(data);
 	}
 
 	void OnDestroy () {
@@ -117,25 +125,25 @@ public class MediaPlayer : MonoBehaviour {
 	}
 
 	void AudioCallback (IntPtr audioPointer, int bufSize) {
-		float[] buffer = new float[bufSize];
-		Marshal.Copy (audioPointer, buffer, 0, bufSize);
+		// float[] buffer = new float[bufSize];
+		// Marshal.Copy (audioPointer, buffer, 0, bufSize);
 
-		float[] data = new float[buffer.Length / 4];
-		Buffer.BlockCopy (buffer, 0, data, 0, buffer.Length);
+		// float[] data = new float[buffer.Length / 4];
+		// Buffer.BlockCopy (buffer, 0, data, 0, buffer.Length);
 
-		float[] audioData = new float[data.Length];
+		// float[] audioData = new float[data.Length];
 
-		for (int i = 0; i < data.Length; i++) {
-			if (data[i] > 1.0f) {
-				audioData[i] = 1.0f;
-			} else if (data[i] < -1.0f) {
-				audioData [i] = -1.0f;
-			} else {
-				audioData [i] = (float)data [i];
-			}
-		}
+		// for (int i = 0; i < data.Length; i++) {
+		// 	if (data[i] > 1.0f) {
+		// 		audioData[i] = 1.0f;
+		// 	} else if (data[i] < -1.0f) {
+		// 		audioData [i] = -1.0f;
+		// 	} else {
+		// 		audioData [i] = (float)data [i];
+		// 	}
+		// }
 
-		audioDataQueue.Add (audioData);
+		// audioDataQueue.Add (audioData);
 
 		//audioSource.Play ();
 	}
@@ -151,18 +159,21 @@ public class MediaPlayer : MonoBehaviour {
 				Debug.Log (e.Source);
 				Debug.Log (e.StackTrace);
 			}
-
 		}
 	}
 
 	private IEnumerator CallPluginAtEndOfFrames()
 	{
 		while (true) {
-			GL.IssuePluginEvent(GetRenderEventFunc(), 1);
 
 			// Wait until all frame rendering is done
 			yield return new WaitForSeconds(1.0f / 29.95f);
 
+			GL.IssuePluginEvent(GetRenderEventFunc(), 1);
+
+			if (!audioSource.isPlaying) {
+				audioSource.Play();
+			}
 		}
 	}
 	#endregion
