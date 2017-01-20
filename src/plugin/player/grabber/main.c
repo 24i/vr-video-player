@@ -64,7 +64,20 @@ void *mediaplayer_start_grabber_thread (void * args) {
 
     int ret;
 
-    while ((ret = av_read_frame(ptrFormatContext, &packet)) >= 0) {
+    while (1) {
+
+        // Arbritary check for queue size
+        if (mediaplayer_video_queue_get_size() > 150) {
+            continue;
+        }
+
+        ret = av_read_frame(ptrFormatContext, &packet);
+        if (ret < 0) {
+            if (ret == AVERROR_EOF) {
+                break;
+            }
+            continue;
+        }
 
         // Skip everything except the video track
         if (packet.stream_index != ptrVideoTrack->trackIndex && packet.stream_index != ptrAudioTrack->trackIndex) {
