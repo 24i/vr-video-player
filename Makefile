@@ -11,10 +11,10 @@ CFILES = $(shell find ./src -type f -name '*.c')
 
 osx:
 	$(shell mkdir -p ./bin/Assets/Plugins)
-	gcc $(CFLAGS) -arch x86_64 -bundle -Wl,-undefined,dynamic_lookup -lGLEW -o ./bin/Assets/Plugins/main.bundle $(CFILES)
+	gcc $(CFLAGS) -arch x86_64 -bundle -Wl,-undefined,dynamic_lookup -lGLEW -o ./bin/Assets/Plugins/VRPlayer.bundle $(CFILES)
 	$(shell cp ./src/unity/MediaPlayer.cs ./bin/Assets/MediaPlayer.cs)
 
 
 android:
 	$(shell mkdir -p ./bin/Assets/Plugins/Android)
-	ndk-build --directory=./ NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk
+	ndk-build --directory=./ NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk APP_ABI=arm64-v8a,armeabi-v7a

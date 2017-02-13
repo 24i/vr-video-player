@@ -13,4 +13,5 @@ float MediaPlayerGetPosition();
 
 int MediaPlayerGetAudioChannels();
 int MediaPlayerGetAudioSampleRate();
+
 #endif

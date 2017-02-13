@@ -15,49 +15,49 @@ public enum MediaPlayerState {
 public class MediaPlayer : MonoBehaviour {
 
 	#region Plugin imports
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern IntPtr GetRenderEventFunc();
 
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern void SetDebugCallback (IntPtr ptrFunc);
 
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern void SetAudioCallback (IntPtr ptrFunc);
 
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern void SetUnityTexture (IntPtr tex);
 
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern void MediaPlayerSetup (string file);
 
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern void MediaPlayerDestroy ();
 
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern void MediaPlayerPlay();
 
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern void MediaPlayerPause();
 
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern void MediaPlayerStop();
 
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern int MediaPlayerGetState();
 
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern float MediaPlayerGetDuration();
 
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern float MediaPlayerGetPosition();
 
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern int MediaPlayerGetAudioChannels();
 
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern int MediaPlayerGetAudioSampleRate();
 
-	[DllImport("main")]
+	[DllImport("VRPlayer")]
 	private static extern void OnReadAudio(float[] data);
 
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -180,6 +180,7 @@ public class MediaPlayer : MonoBehaviour {
 	/// Starts media player playback
 	/// </summary>
 	public void Play () {
+		Debug.Log ("MEDIA PLAY HOORAY");
 		MediaPlayerPlay ();
 	}
 
