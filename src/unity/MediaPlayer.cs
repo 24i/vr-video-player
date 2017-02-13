@@ -219,6 +219,22 @@ public class MediaPlayer : MonoBehaviour {
 		return (MediaPlayerState)(MediaPlayerGetState() - 1);
 	}
 
+	/// <summary>
+	/// Get the media player position
+	/// </summary>
+	/// <returns>The current media file position in seconds.</returns>
+	public float GetPosition () {
+		return MediaPlayerGetPosition ();
+	}
+
+	/// <summary>
+	/// Get the media player duration
+	/// </summary>
+	/// <returns>The current media file duration in seconds.</returns>
+	public float GetDuration () {
+		return MediaPlayerGetDuration ();
+	}
+
 	public void SetPosition () {
 		Debug.Log ("Method not yet implemented");
 	}
